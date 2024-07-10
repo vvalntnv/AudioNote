@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  postgres_db:
+    container_name: audio-postgres
+    image: "postgres:16"
+    restart: always
+    env_file: "../.env.postgres"
+    volumes:
+      - audio_postgres:/var/lib/postgresql/data/
+    networks:
+      - notes_private
+    ports:
+      - "5432:5432"
+
+  mongo_db:
+    container_name: audio-mongo
+    image: "mongodb/mongodb-community-server:7.0.0-ubuntu2204"
+    networks:
+      - books_private
+    ports:
+      - "27017:27017"
+
+volumes:
+  audio_postgres:
+
+networks:
+  common:
+    driver: bridge
+  notes_private:
+    driver: bridge
+  books_private:
+    driver: bridge
