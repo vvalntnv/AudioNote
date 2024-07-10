@@ -16,6 +16,7 @@ services:
   mongo_db:
     container_name: audio-mongo
     image: "mongodb/mongodb-community-server:7.0.0-ubuntu2204"
+    restart: always
     networks:
       - books_private
     ports:
