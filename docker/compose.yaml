@@ -1,6 +1,30 @@
 version: "3.8"
 
 services:
+  audio_book_api:
+    build:
+      context: ../audio_book_api
+      dockerfile: ../docker/audio_book.Dockerfile
+    container_name: audio-api
+    volumes:
+      - "../audio_book_api/src:/app/src"
+    ports:
+      - "8080:8080"
+    networks:
+      - books_private
+
+  audio_note:
+    build:
+      context: ../audio_note
+      dockerfile: ../docker/audio_note.Dockerfile
+    container_name: audio-note
+    volumes:
+      - "../audio_note:/app"
+    ports:
+      - "8000:8000"
+    networks:
+      - notes_private
+
   postgres_db:
     container_name: audio-postgres
     image: "postgres:16"

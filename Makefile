@@ -9,3 +9,6 @@ shell-postgres:
 
 shell-mongo:
 	docker exec -it audio-mongo bash
+
+shell-api:
+	docker exec -it audio-api bash
