@@ -12,19 +12,20 @@ module.exports = {
          */
 
         /*  Templates within theme app (<tailwind_app_name>/templates), e.g. base.html. */
-        '../templates/**/*.html',
+        '../templates/**/*.htmldjango',
 
         /*
          * Main templates directory of the project (BASE_DIR/templates).
          * Adjust the following line to match your project structure.
          */
-        '../../templates/**/*.html',
+        '../../templates/**/*.htmldjango',
+        '../../templates/*.htmldjango',
 
         /*
          * Templates in other django apps (BASE_DIR/<any_app_name>/templates).
          * Adjust the following line to match your project structure.
          */
-        '../../**/templates/**/*.html',
+        '../../**/templates/**/*.htmldjango',
 
         /**
          * JS: If you use Tailwind CSS in JavaScript, uncomment the following lines and make sure

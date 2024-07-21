@@ -1,0 +1,7 @@
+{% extends 'base.htmldjango' %}
+
+{% block content %}
+<div class="bg-gray">
+	<h1 class="text-red-500">Hello GUYS</h1>
+</div>
+{% endblock %}
