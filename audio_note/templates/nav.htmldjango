@@ -1,10 +1,14 @@
-<nav class="bg-white shadow-md">
+<nav class="bg-gray-800 shadow-md place-items-start">
     <div class="container mx-auto px-4">
         <ul class="flex space-x-4 py-4">
-            <li><a href="#" class="text-red-500 hover:text-red-700">Home</a></li>
-            <li><a href="#" class="text-gray-700 hover:text-gray-900">About</a></li>
-            <li><a href="#" class="text-gray-700 hover:text-gray-900">Contact</a></li>
+            <li><a href="#" class="text-gray-500 hover:text-red-700">Home</a></li>
+            <li><a href="#" class="text-gray-700 hover:text-red-900">About</a></li>
+            <li><a href="#" class="text-gray-700 hover:text-red-900">Contact</a></li>
             {% if user.is_authenticated %}
+				{% if user.is_superuser %}
+					<li><a href="#" class="text-gray-700 hover:text-gray-900">ADMIN</a></li>
+				{% endif %}
+
                 <li><a href="#" class="text-gray-700 hover:text-gray-900">Logout</a></li>
             {% else %}
                 <li><a href="#" class="text-gray-700 hover:text-gray-900">Login</a></li>

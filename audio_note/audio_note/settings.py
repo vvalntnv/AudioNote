@@ -10,7 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
+from dotenv import load_dotenv
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -37,9 +40,13 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     # External apps
     "tailwind",
     "django_browser_reload",
+    "crispy_forms",
+    "crispy_tailwind",
+
     # Internal apps
     "theme",
     "base",
@@ -80,10 +87,21 @@ WSGI_APPLICATION = "audio_note.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+DB_USER = os.environ.get("DB_USER")
+DB_PASS = os.environ.get("DB_PASS")
+DB_NAME = os.environ.get("DB_NAME")
+DB_ADDRESS = os.environ.get("DB_ADDRESS")
+DB_PORT = os.environ.get("DB_PORT")
+
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": DB_NAME,
+        "USER": DB_USER,
+        "PASSWORD": DB_PASS,
+        "HOST": DB_ADDRESS,
+        "PORT": DB_PORT,
     }
 }
 
@@ -142,3 +160,8 @@ INTERNAL_IPS = [
     "127.0.0.1",
     "localhost"
 ]
+
+# Crispy
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+
+CRISPY_TEMPLATE_PACK = "tailwind"

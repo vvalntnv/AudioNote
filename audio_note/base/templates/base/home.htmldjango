@@ -1,7 +1,18 @@
 {% extends 'base.htmldjango' %}
 
 {% block content %}
-<div class="bg-gray">
-	<h1 class="text-red-500">Hello GUYS</h1>
+{% if not user.is_authenticated %}
+<div class="bg-transparent text-white py-20 mt-">
+    <div class="container mx-auto text-center">
+        <h1 class="text-5xl font-bold mb-4">Welcome to AudioNote</h1>
+        <p class="text-xl mb-8">This is a website for taking notes inside of your favourite audiobook!</p>
+        <div>
+			<a href="{% url 'register' %}" class="bg-white text-blue-500 font-semibold py-2 px-4 rounded mr-2 hover:bg-gray-200">Register</a>
+            <a href="" class="bg-white text-blue-500 font-semibold py-2 px-4 rounded hover:bg-gray-200">Sign In</a>
+        </div>
+    </div>
 </div>
+{% else %}
+<h1>Good to have you back</h1>
+{% endif %}
 {% endblock %}

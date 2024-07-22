@@ -8,18 +8,19 @@
     <title>{% block title %}AudioNote{% endblock title %}</title>
 	{% tailwind_css %}
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-900">
     <header>
 		{% include 'nav.htmldjango' %}
     </header>
     
-    <main>
+    <main class="flex flex-col h-screen">
         {% block content %}
         {% endblock content %}
     </main>
     
-    <footer>
-        <p class="text">&copy; 2024 AudioNote. All rights reserved.</p>
-    </footer> 
-</body>
+	<footer class="bg-gray-800 text-white py-4">
+		<div class="container mx-auto text-center">
+			<p>&copy; 2024 My Website. All rights reserved.</p>
+		</div>
+	</footer>
 </html>
