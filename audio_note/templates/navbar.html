@@ -1,0 +1,13 @@
+<nav>
+	<ul>
+		<li><a href="">Home</a></li>
+		<li><a href="">About</a></li>
+		<li><a href="">Contact</a></li>
+		{% if user.is_authorized %}
+			<li><a href="">Log out</a></li>
+		{% else %}
+			<li><a href="">Log in</a></li>
+			<li><a href="{% url 'register' %}">Register</a></li>
+		{% endif %}
+	</ul>
+</nav>
