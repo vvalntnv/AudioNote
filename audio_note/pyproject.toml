@@ -13,6 +13,7 @@ psycopg = {extras = ["binary"], version = "^3.2.1"}
 python-dotenv = "^1.0.1"
 django-crispy-forms = "^2.3"
 crispy-bootstrap4 = "^2024.1"
+django-browser-reload = "^1.13.0"
 
 
 [build-system]
