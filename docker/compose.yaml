@@ -1,17 +1,17 @@
 version: "3.8"
 
 services:
-  audio_book_api:
-    build:
-      context: ../audio_book_api
-      dockerfile: ../docker/audio_book.Dockerfile
-    container_name: audio-api
-    volumes:
-      - "../audio_book_api/src:/app/src"
-    ports:
-      - "8080:8080"
-    networks:
-      - books_private
+  # audio_book_api:
+  #   build:
+  #     context: ../audio_book_api
+  #     dockerfile: ../docker/audio_book.Dockerfile
+  #   container_name: audio-api
+  #   volumes:
+  #     - "../audio_book_api/src:/app/src"
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - books_private
 
   # audio_note:
   #   build:
@@ -37,14 +37,14 @@ services:
     ports:
       - "5432:5432"
 
-  mongo_db:
-    container_name: audio-mongo
-    image: "mongodb/mongodb-community-server:7.0.0-ubuntu2204"
-    restart: always
-    networks:
-      - books_private
-    ports:
-      - "27017:27017"
+  # mongo_db:
+  #   container_name: audio-mongo
+  #   image: "mongodb/mongodb-community-server:7.0.0-ubuntu2204"
+  #   restart: always
+  #   networks:
+  #     - books_private
+  #   ports:
+  #     - "27017:27017"
 
 volumes:
   audio_postgres:

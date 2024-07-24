@@ -152,3 +152,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # CRISPY
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap4"
 CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+#MESSAGES
+MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'

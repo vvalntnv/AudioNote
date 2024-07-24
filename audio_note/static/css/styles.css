@@ -1,0 +1,29 @@
+* {
+	margin: 0;
+	padding: 0;
+}
+
+.link-container {
+	display: flex;
+	justify-content: auto;
+	align-items: center;
+	gap: 5px;
+}
+.link-container li {
+	list-style: none;
+}
+.link-container li a {
+	text-decoration: none;
+}
+.link-container li a::after {
+	content: "";
+	background: black;
+	margin: auto;
+	display: block;
+	transition: .4s;
+	height: 1px;
+	width: 0px;
+}
+.link-container li a:hover::after {
+	width: 100%;
+}
