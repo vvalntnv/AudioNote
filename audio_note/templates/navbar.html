@@ -1,13 +1,42 @@
+{% load static %}
+
 <nav class="navbar">
 	<ul class="link-container">
 		<li><a href="">Home</a></li>
 		<li><a href="">About</a></li>
 		<li><a href="">Contact</a></li>
 		{% if user.is_authorized %}
-			<li class="user-related"><a href="">Log out</a></li>
+			<li><a href="">Log out</a></li>
 		{% else %}
-			<li class="user-related"><a href="">Log in</a></li>
-			<li class="user-related"><a href="{% url 'register' %}">Register</a></li>
+			<li><a href="">Log in</a></li>
+			<li><a href="{% url 'register' %}">Register</a></li>
 		{% endif %}
 	</ul>
+
+	<div class="hamburger-button" onclick="sidebarToggle()">
+		<div class="line"></div>
+		<div class="line"></div>
+		<div class="line"></div>
+	</div>
+
+	<div id="sidebar" onclick="sidebarToggle()">
+		<div class="sidebar-wrapper">
+			<div class="hamburger-button">
+				<div class="line"></div>
+				<div class="line"></div>
+				<div class="line"></div>
+			</div>
+			<ul class="mobile-links">
+				<li><a href="">Home</a></li>
+				<li><a href="">About</a></li>
+				<li><a href="">Contact</a></li>
+				{% if user.is_authorized %}
+					<li class="user-related"><a href="">Log out</a></li>
+				{% else %}
+					<li class="user-related"><a href="">Log in</a></li>
+					<li class="user-related"><a href="{% url 'register' %}">Register</a></li>
+				{% endif %}
+			</ul>
+		</div>
+	</div>
 </nav>

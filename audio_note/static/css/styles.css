@@ -1,13 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
 * {
 	margin: 0;
 	padding: 0;
+	font-family: 'Poppins';
+}
+
+body {
+	background-color: #74512D;
+}
+
+main {
+	color: #F8F4E1;
+	height: 100vh;
+}
+
+.container {
+	display: flex;
+	flex-direction: column;
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 0 10px;
+	justify-content: center;
+	gap: 5px;
+}
+
+
+.container button {
+	text-decoration: none;
+	color: white;
+	border: none;
+	padding: 10px;
+	margin: 0 auto;
+	text-align: center;
+	border-radius: 5px;
+	width: 100%;
+	background-color: #543310;
+}
+.container button .button-a {
+	display: flex;
+	justify-content: center;
+	text-decoration: none;
+	color: white;
+	width: 100%;
+}
+
+.container button.button-a:hover {
+	transition: .4s;
+	background-color: #40534C;
+}
+
+.subheading {
+	text-align: center;
+}
+
+
+.jumbotron {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
 }
 
 .navbar {
 	padding: 10px;
 	border-style: solid;
-	border-color: #40534C;
-	background-color: #40534C;
+	color: #F8F4E1;
+	border-color: #543310;
+	background-color: #543310;
 }
 
 .link-container {
@@ -20,10 +80,6 @@
 	list-style: none;
 	padding-left: 5px;
 	padding-right: 5px;
-}
-
-.link-container .user-related {
-
 }
 
 .link-container li a {
@@ -41,4 +97,57 @@
 }
 .link-container li a:hover::after {
 	width: 100%;
+}
+
+.hamburger-button {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	justify-items: flex-end;
+	cursor: pointer;
+}
+
+.hamburger-button .line {
+	height: 5px;
+	width: 30px;
+	background-color: #FFFFFF;
+}
+
+ #sidebar {
+	top: 0;
+	z-index: 100;
+	padding: 10px 0;
+	position: fixed;
+	width: 100%;
+	left: -100%;
+	background-color: #74512D;
+	transition: .4s;
+	min-height: 100vh;
+}
+
+#sidebar.active {
+	left: 0;
+}
+
+#sidebar .sidebar-wrapper {
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	gap: 10px;
+}
+
+#sidebar .sidebar-wrapper .mobile-links {
+	list-style: none;
+}
+
+@media (max-width: 768px) {
+	.link-container {
+		display: none;
+	}
+}
+
+@media (min-width: 768px) {
+	.hamburger-button {
+		display: none;
+	}
 }

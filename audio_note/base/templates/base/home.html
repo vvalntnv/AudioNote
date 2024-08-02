@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div style="background-color: 'red'">
+<div class="container">
 	<h1>Welcome to AudioNote</h1>
-	<h3> So do you want to register?</h3>
-	<a href="{% url 'register' %}">Register</a>
+	<h3 class="subheading">PLZ, register 🔥🙏</h3>
+	<button>
+		<a class="button-a" href="{% url 'register' %}">Register</a>
+	</button>
 </div>
 {% endblock %}
