@@ -1,4 +1,9 @@
 const sidebar = document.getElementById('sidebar');
-export const sidebarToggle = () => {
+
+const sidebarToggle = () => {
+	console.log('we are here');
 	sidebar.classList.toggle('active');
 }
+
+// hamburgerButton.addEventListener('click', () => {
+// });

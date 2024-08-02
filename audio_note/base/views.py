@@ -1,12 +1,14 @@
 from django.contrib import messages
-from django.shortcuts import render
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, FormView, TemplateView
+from django.views.generic import CreateView, TemplateView
 from .forms import RegisterForm
 
 # Create your views here.
 class HomeView(TemplateView):
     template_name = "base/home.html"
+    extra_context = {
+        "website_info": "This is a website where you can take notes on audio books"
+    }
 
 class RegisterView(CreateView):
     form_class = RegisterForm
@@ -18,6 +20,3 @@ class RegisterView(CreateView):
         messages.success(self.request, "User created successfully")
 
         return response
-
-class LogInView(FormView):
-    ...

@@ -25,6 +25,11 @@ main {
 	gap: 5px;
 }
 
+.container.center {
+	display: flex;
+	margin-top: 30vh
+}
+
 
 .container button {
 	text-decoration: none;
@@ -105,6 +110,9 @@ main {
 	gap: 5px;
 	justify-items: flex-end;
 	cursor: pointer;
+	background-color: red;
+	width: 30px;
+	padding: 5px;
 }
 
 .hamburger-button .line {

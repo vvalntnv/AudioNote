@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import os
 from pathlib import Path
+from django.urls import reverse, reverse_lazy
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -157,3 +158,6 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 #MESSAGES
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+
+# DEFAULT URLS
+LOGOUT_REDIRECT_URL = reverse_lazy('home')

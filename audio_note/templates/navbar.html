@@ -2,13 +2,13 @@
 
 <nav class="navbar">
 	<ul class="link-container">
-		<li><a href="">Home</a></li>
+		<li><a href="{% url 'home' %}">Home</a></li>
 		<li><a href="">About</a></li>
 		<li><a href="">Contact</a></li>
-		{% if user.is_authorized %}
-			<li><a href="">Log out</a></li>
+		{% if user.is_authenticated %}
+			<li><a href="#" onclick="logoutUser()">Log out</a></li>
 		{% else %}
-			<li><a href="">Log in</a></li>
+			<li><a href="{% url 'login' %}">Log in</a></li>
 			<li><a href="{% url 'register' %}">Register</a></li>
 		{% endif %}
 	</ul>
@@ -19,9 +19,9 @@
 		<div class="line"></div>
 	</div>
 
-	<div id="sidebar" onclick="sidebarToggle()">
+	<div id="sidebar">
 		<div class="sidebar-wrapper">
-			<div class="hamburger-button">
+			<div class="hamburger-button" id="hamburger" onclick="sidebarToggle()">
 				<div class="line"></div>
 				<div class="line"></div>
 				<div class="line"></div>
