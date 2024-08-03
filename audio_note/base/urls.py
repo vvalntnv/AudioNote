@@ -8,7 +8,7 @@ urlpatterns = [
     path(
         "users/login", 
         LoginView.as_view(
-            template_name="base",
+            template_name="base/login.html",
             next_page=reverse_lazy('home')
         ), 
         name="login"
