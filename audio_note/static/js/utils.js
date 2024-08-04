@@ -12,3 +12,7 @@ export function getCookie(cookieName) {
 
 	return null;
 }
+
+export function removeParentElement(child) {
+	this.parentElement.remove();	
+}

@@ -1,0 +1,67 @@
+/* messages */
+.messages {
+	margin-top: 10px;
+	margin-left: 10px;
+	display: flex;
+	right: 20px;
+	flex-direction: column;
+	position: fixed;
+	gap: 5px;
+	list-style: none;
+	z-index: 999;
+	max-width: 25%;
+}
+
+.message {
+	position: relative;
+	padding: 10px;		
+	background-color: gray;
+	border-radius: 10px;
+	font-family: Arial, Helvetica, sans-serif;
+	word-break: keep-all;
+	overflow-wrap: break-word;
+	color: white;
+	animation-name: slideIn;
+	animation-duration: 1s;
+}
+
+.message .close-button {
+	position: absolute;
+	padding: 0 4px;
+	top: 0px;
+	right: 6px;
+	cursor: pointer;
+}
+
+.close-button:hover {
+	transition: .4s;
+	background-color: red;
+}
+
+.message .message-content {
+	padding-right: 15px;
+}
+
+.message.success {
+	background-color: #6e995d;
+}
+
+.message.info {
+	background-color: #406280;
+}
+
+.message.warning {
+	background-color: #b3a637;
+}
+
+.message.error {
+	background-color: #cf2d2d;
+}
+
+.messages .loading-bar {
+	height: 4px;
+	margin-top: 5px;
+	margin-bottom: 0;
+	background-color: white;
+	animation: load 10s linear;
+}

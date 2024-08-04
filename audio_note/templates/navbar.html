@@ -5,6 +5,9 @@
 		<li><a href="">Contact</a></li>
 		{% if user.is_authenticated %}
 			<li><a href="#" onclick="logoutUser()">Log out</a></li>
+			{% if user.is_superuser %}
+			<li><a href="#">Admin Panel</a></li>
+			{% endif %}
 		{% else %}
 			<li><a href="{% url 'login' %}">Log in</a></li>
 			<li><a href="{% url 'register' %}">Register</a></li>

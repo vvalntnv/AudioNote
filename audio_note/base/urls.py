@@ -1,4 +1,6 @@
 from django.urls import path, reverse_lazy
+
+from base.forms import LoginForm
 from .views import HomeView, RegisterView
 from django.contrib.auth.views import LogoutView, LoginView
 
@@ -9,7 +11,8 @@ urlpatterns = [
         "users/login", 
         LoginView.as_view(
             template_name="base/login.html",
-            next_page=reverse_lazy('home')
+            next_page=reverse_lazy('home'),
+            authentication_form=LoginForm
         ), 
         name="login"
     ),

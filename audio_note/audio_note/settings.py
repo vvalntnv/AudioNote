@@ -158,6 +158,7 @@ CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 #MESSAGES
 MESSAGE_STORAGE = 'django.contrib.messages.storage.cookie.CookieStorage'
+MESSAGE_LEVEL = 10
 
 # DEFAULT URLS
 LOGOUT_REDIRECT_URL = reverse_lazy('home')

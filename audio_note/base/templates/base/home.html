@@ -1,23 +1,25 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container center">	
-	<h1>Welcome to AudioNote</h1>
-	<p>{{ website_info }}</p>
-</div>
-
-{% if not user.is_authenticated %}
-	<div class="container">
+<div class="super-container">
+	<div id="welcome-message" class="container">	
+		<h1 class="heading">Welcome to AudioNote</h1>
+		<p>{{ website_info }}</p>
+	</div>
+	<div id="main-content" class="container">
+	{% if not user.is_authenticated %}
 		<h3 class="subheading">PLZ, register 🔥🙏</h3>
 		<button>
 			<a class="button-a" href="{% url 'register' %}">Register</a>
 		</button>
-	</div>
-{% else %}
-	<div class="container">
+		{% else %}
 		<h3 class="subheading">Welcome, Gigachad</h3>
 		<h4 class="subheading">Here, take a look at what you are still unable to finish</h4>
+		<button>
+			<a class="button-a" href="#">My Books</a>
+		</button>
+		{% endif %}
 	</div>
-{% endif %}
+</div>
 
 {% endblock %}

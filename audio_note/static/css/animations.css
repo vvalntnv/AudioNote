@@ -1,0 +1,29 @@
+@keyframes slideIn {
+	from { transform: translateX(100vw); }
+	to { transform: translateX(0); }
+}
+
+@keyframes load {
+	from { width: 0% }
+	to { width: 100% }	
+}
+
+@keyframes slideOut {
+	from { transform: translateX(0); }
+	to { transform: translateX(20vw); }
+}
+
+@keyframes fadeOut {
+	0% { 
+		opacity: 1;
+	}
+
+	50% {
+		opacity: 0.5;
+	}
+
+	100% {
+		opacity: 0.1;
+		display: none;
+	}
+}

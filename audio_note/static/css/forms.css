@@ -1,0 +1,43 @@
+.audio-form {
+	display: flex;
+	flex-direction: column;
+	max-width: 27vw;
+	margin-top: 15vh;
+	margin-left: auto;
+	margin-right: auto;
+	padding-top: 20px;
+	transform: scale(1.4);
+}
+
+.audio-form fieldset {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	border: none;
+	margin: 0 auto;
+	gap: 20px;
+}
+
+.audio-form fieldset legend{
+	text-align: center;
+	margin: 0px auto;
+}
+
+.form-button {
+	text-decoration: none;
+	color: var(--text-main);
+	border: none;
+	border-radius: 5px;
+	background-color: var(--button-main);
+	cursor: pointer;
+}
+
+.form-button:hover {
+	background-color: var(--button-hover);
+	transition: .4s;
+}
+
+.audio-form .alert ul {
+	background-color: red;
+	list-style: none;
+}
