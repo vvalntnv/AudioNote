@@ -37,14 +37,14 @@ services:
     ports:
       - "5432:5432"
 
-  # mongo_db:
-  #   container_name: audio-mongo
-  #   image: "mongodb/mongodb-community-server:7.0.0-ubuntu2204"
-  #   restart: always
-  #   networks:
-  #     - books_private
-  #   ports:
-  #     - "27017:27017"
+  mongo_db:
+    container_name: audio-mongo
+    image: "mongodb/mongodb-community-server:7.0.0-ubuntu2204"
+    restart: always
+    networks:
+      - books_private
+    ports:
+      - "9191:27017"
 
 volumes:
   audio_postgres:

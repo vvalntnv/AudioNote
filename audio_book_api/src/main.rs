@@ -1,3 +1,5 @@
+pub mod database;
+
 use actix_web::{self, web, App, HttpResponse, HttpServer};
 
 async fn healthpoint() -> HttpResponse {
