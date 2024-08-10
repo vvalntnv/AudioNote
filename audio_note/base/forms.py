@@ -6,10 +6,28 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Fieldset, Layout, Field, Submit
 
 class RegisterForm(UserCreationForm):
+    username = forms.CharField(label="Username")
+    password1 = forms.CharField(label="Password", widget=forms.PasswordInput)
+    password2 = forms.CharField(label="Repeat Password", widget=forms.PasswordInput)
 
     class Meta(UserCreationForm.Meta):
         model = User
         fields = ['username', 'password1', 'password2']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper(self)
+        self.helper.form_class = 'audio-form'
+        self.helper.layout = Layout(
+            Fieldset(
+                "Register to AudioNote",
+                Field('username'),
+                Field('password1'),
+                Field('password2'),
+                Submit('submit', "Log in", css_class='form-button'),
+                css_class="form-fields-custom"
+            )
+        )
 
 
 class LoginForm(AuthenticationForm):
