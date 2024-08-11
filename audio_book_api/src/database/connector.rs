@@ -1,5 +1,8 @@
-use mongodb::Client;
+use mongodb::{Client, Collection};
 use std::env;
+
+use super::database_models::book::Book;
+use super::savable::Savable;
 
 struct ConnectionArgs {
     username: String,
@@ -8,7 +11,7 @@ struct ConnectionArgs {
     port: isize,
 }
 
-struct DatabaseConnection {
+pub struct DatabaseConnection {
     client: Client
 }
 
@@ -40,7 +43,7 @@ impl ConnectionArgs {
 }
 
 impl DatabaseConnection {
-    async fn new(args: ConnectionArgs) -> Self {
+    pub async fn new(args: ConnectionArgs) -> Self {
         let url = args.construct_url();
         let client = Client::with_uri_str(url)
             .await
@@ -51,8 +54,31 @@ impl DatabaseConnection {
         }
     } 
 
-    async fn from_env() -> Self {
+    pub async fn from_env() -> Self {
         let username = env::var("MONGO_USERNAME").unwrap();
-        todo!()
+        let password = env::var("MONGO_PASSWORD").unwrap();
+        let host = env::var("MONGO_HOST").unwrap();
+        let port = env::var("MONGO_PORT").unwrap()
+            .parse::<isize>()
+            .expect("Port couldn't be casted to integer");
+
+        let connection_args = ConnectionArgs::new(
+            &username, &password, &host, port
+        );
+        return Self::new(connection_args).await;
+    }
+
+    pub fn get_client(&self) -> &Client {
+        &self.client
+    }
+
+    pub fn get_collection<S: Savable>(&self) -> Collection<S> {
+        let database_name = S::get_database_name();
+        let database = self.client.database(&database_name); 
+
+        let collection_name = S::get_collection_name();
+        let collection = database.collection(&collection_name);
+
+        collection
     }
 }

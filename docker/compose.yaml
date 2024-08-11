@@ -41,6 +41,9 @@ services:
     container_name: audio-mongo
     image: "mongodb/mongodb-community-server:7.0.0-ubuntu2204"
     restart: always
+    env_file: "../.env.mongo"
+    volumes:
+      - audio_mongo:/data/db
     networks:
       - books_private
     ports:
@@ -48,6 +51,7 @@ services:
 
 volumes:
   audio_postgres:
+  audio_mongo:
 
 networks:
   common:
