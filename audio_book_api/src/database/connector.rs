@@ -1,7 +1,6 @@
 use mongodb::{Client, Collection};
 use std::env;
 
-use super::database_models::book::Book;
 use super::savable::Savable;
 
 struct ConnectionArgs {
@@ -32,20 +31,23 @@ impl ConnectionArgs {
     } 
 
     fn construct_url(&self) -> String{
-        format!(
-            "mongodb://{user}:{pass}@{host}:{port} ",
+        let url = format!(
+            "mongodb://{user}:{pass}@{host}:{port}",
             user=self.username,
             pass=self.password,
             host=self.host,
             port=self.port 
-        ) 
+        );
+
+        url
     }
 }
 
 impl DatabaseConnection {
-    pub async fn new(args: ConnectionArgs) -> Self {
+    async fn new(args: ConnectionArgs) -> Self {
         let url = args.construct_url();
-        let client = Client::with_uri_str(url)
+        println!("{}", &url);
+        let client = Client::with_uri_str(&url)
             .await
             .unwrap();
         
@@ -66,10 +68,6 @@ impl DatabaseConnection {
             &username, &password, &host, port
         );
         return Self::new(connection_args).await;
-    }
-
-    pub fn get_client(&self) -> &Client {
-        &self.client
     }
 
     pub fn get_collection<S: Savable>(&self) -> Collection<S> {

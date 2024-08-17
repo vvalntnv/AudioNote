@@ -1,9 +1,11 @@
 mod database;
 mod books;
+mod generics;
 
 use actix_web::{self, web, App, HttpResponse, HttpServer};
 use books::services::users_scope;
 use database::connector::DatabaseConnection;
+use dotenv;
 
 struct AppState {
     db: DatabaseConnection
@@ -15,6 +17,8 @@ async fn healthpoint() -> HttpResponse {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
+    dotenv::from_filename(".env").ok();
+
     let app_state = AppState {
         db: DatabaseConnection::from_env().await
     };
