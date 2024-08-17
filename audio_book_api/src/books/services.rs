@@ -1,7 +1,7 @@
 use actix_web::web::{self, Json};
 use crate::{database::database_models::book::Book,  AppState};
 
-use super::external_models::{UploadBookMetaData, UploadBookMetaDataResponse};
+use super::external_models::{UploadBookContentResult, UploadBookMetaData, UploadBookMetaDataResponse};
 use super::errors::BookError;
 
 
@@ -43,4 +43,10 @@ pub async fn upload_book_metadata(
             details: err.to_string()
         })
     }
+}
+
+pub async fn upload_book_content(
+    app_data: web::Data<AppState>
+) -> BookResult<UploadBookContentResult> {
+    todo!()
 }
