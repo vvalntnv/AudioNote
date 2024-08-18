@@ -4,7 +4,7 @@ use sha2::{Sha256, Digest};
 use rand::{distributions::Alphanumeric, rngs::OsRng, Rng, RngCore};
 use serde::{Serialize, Deserialize};
 
-use chrono::{Utc, Duration};
+use chrono::{Duration, Local, Utc};
 use base64::{alphabet::URL_SAFE, engine::{GeneralPurpose, GeneralPurposeConfig}, Engine as _};
 
 use super::super::savable::Savable;
@@ -86,6 +86,12 @@ impl StreamData {
         &self.refresh_token
     }
 
+    pub fn get_refresh_token_validity(&self) -> chrono::DateTime<Local> {
+        let datetime: chrono::DateTime<Utc> = self.refresh_token_valid_until.into();
+
+        chrono::DateTime::from(datetime) 
+    }
+
     pub fn is_valid(&self) -> bool {
         let now = Utc::now();
         
@@ -95,7 +101,7 @@ impl StreamData {
     pub fn refresh_stream(&mut self, refresh_token: String) -> Result<(), String> {
         let now = Utc::now(); 
 
-        if now < self.refresh_token_valid_until.into() {
+        if now >= self.refresh_token_valid_until.into() {
             return Err("Refresh token is not valid anymore".to_string())
         } 
 
@@ -105,9 +111,13 @@ impl StreamData {
 
         let valid_until = now + Duration::minutes(20);
         let refresh_token_valid_until = valid_until + Duration::minutes(5);
+
+        let stream_factory = StreamFactory::new(self.book_id.to_string());
+        let new_refresh_token = stream_factory.generate_token();
         
         self.valid_until = valid_until.into();
         self.refresh_token_valid_until = refresh_token_valid_until.into();
+        self.refresh_token = new_refresh_token;
 
         Ok(())
     }

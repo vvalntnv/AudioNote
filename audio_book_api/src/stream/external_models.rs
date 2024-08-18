@@ -1,4 +1,5 @@
-use serde::Serialize;
+use chrono::{DateTime, Local};
+use serde::{Deserialize, Serialize};
 
 use crate::database::database_models::stream_data::StreamData;
 
@@ -15,4 +16,16 @@ impl From<StreamData> for StreamGeneratedResponse {
             stream_refresh_token: stream.get_refresh_token().to_string()
         }
     }
+}
+
+#[derive(Deserialize)]
+pub struct RefreshStreamRequest {
+    pub refresh_token: String 
+}
+
+#[derive(Serialize)]
+pub struct RefreshStreamResponse {
+    pub message: String,
+    pub refresh_token: String,
+    pub valid_until: DateTime<Local>
 }
