@@ -16,7 +16,10 @@ pub enum BookError {
     FileError { details: String },
 
     #[display("invalid_id_format")]
-    InvalidIdFormat { details: String }
+    InvalidIdFormat { details: String },
+
+    #[display("invalid_dir_numner")]
+    InvalidDirectoryNumber { details: String}
 }
 
 impl ResponseError for BookError {
@@ -27,7 +30,8 @@ impl ResponseError for BookError {
             BookError::UnsuccessfulInsertion { details } => details.to_owned(),
             BookError::PayloadError { details } => details.to_owned(),
             BookError::FileError { details } => details.to_owned(),
-            BookError::InvalidIdFormat { details } => details.to_owned()
+            BookError::InvalidIdFormat { details } => details.to_owned(),
+            BookError::InvalidDirectoryNumber { details } => details.to_owned()
         };
 
         let error_content = ErrorContent::new(message, details, status_code.as_u16());
@@ -41,7 +45,8 @@ impl ResponseError for BookError {
             BookError::UnsuccessfulInsertion{ .. } => StatusCode::INTERNAL_SERVER_ERROR,
             BookError::PayloadError { .. } => StatusCode::BAD_REQUEST,
             BookError::FileError { .. } => StatusCode::INTERNAL_SERVER_ERROR,
-            BookError::InvalidIdFormat { .. } => StatusCode::BAD_REQUEST
+            BookError::InvalidIdFormat { .. } => StatusCode::BAD_REQUEST,
+            BookError::InvalidDirectoryNumber{ .. } => StatusCode::INTERNAL_SERVER_ERROR
         } 
     }
 }

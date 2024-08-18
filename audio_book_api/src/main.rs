@@ -1,9 +1,11 @@
 mod database;
 mod books;
 mod generics;
+mod stream;
 
 use actix_web::{self, web, App, HttpResponse, HttpServer};
-use books::services::users_scope;
+use books::services::books_scope;
+use stream::services;
 use database::connector::DatabaseConnection;
 use dotenv;
 
@@ -29,7 +31,7 @@ async fn main() -> std::io::Result<()> {
             .app_data(app_state.clone())
             .route("/", web::get().to(healthpoint))
             .service(
-                web::scope("/books").configure(users_scope)
+                web::scope("/books").configure(books_scope)
             )
     })
     .bind(("0.0.0.0", 8080))?

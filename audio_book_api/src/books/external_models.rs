@@ -14,5 +14,5 @@ pub struct UploadBookMetaDataResponse {
 
 #[derive(Serialize)]
 pub struct UploadBookContentResult {
-    pub status_code: u32
+    pub message: String
 }
