@@ -5,7 +5,7 @@ mod stream;
 
 use actix_web::{self, web, App, HttpResponse, HttpServer};
 use books::services::books_scope;
-use stream::services;
+use stream::services::stream_scope;
 use database::connector::DatabaseConnection;
 use dotenv;
 
@@ -32,6 +32,9 @@ async fn main() -> std::io::Result<()> {
             .route("/", web::get().to(healthpoint))
             .service(
                 web::scope("/books").configure(books_scope)
+            )
+            .service(
+                web::scope("/stream").configure(stream_scope)
             )
     })
     .bind(("0.0.0.0", 8080))?

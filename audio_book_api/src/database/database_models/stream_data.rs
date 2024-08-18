@@ -1,12 +1,13 @@
+use bson::doc;
 use mongodb::bson;
 use sha2::{Sha256, Digest};
 use rand::{distributions::Alphanumeric, rngs::OsRng, Rng, RngCore};
 use serde::{Serialize, Deserialize};
 
-use chrono::{DateTime, Utc, Duration};
+use chrono::{Utc, Duration};
 use base64::{alphabet::URL_SAFE, engine::{GeneralPurpose, GeneralPurposeConfig}, Engine as _};
 
-use crate::database::savable::Savable;
+use super::super::savable::Savable;
 
 pub struct StreamFactory {
     book_id: String
@@ -74,6 +75,59 @@ pub struct StreamData {
     refresh_token: String,
     refresh_token_valid_until: bson::DateTime, 
     book_id: String
+}
+
+impl StreamData {
+    pub fn get_stream_id(&self) -> &str {
+        &self.stream_id 
+    } 
+
+    pub fn get_refresh_token(&self) -> &str {
+        &self.refresh_token
+    }
+
+    pub fn is_valid(&self) -> bool {
+        let now = Utc::now();
+        
+        now < self.valid_until.into()
+    }
+
+    pub fn refresh_stream(&mut self, refresh_token: String) -> Result<(), String> {
+        let now = Utc::now(); 
+
+        if now < self.refresh_token_valid_until.into() {
+            return Err("Refresh token is not valid anymore".to_string())
+        } 
+
+        if self.refresh_token != refresh_token {
+            return Err("Refresh token is not correct!".to_string())
+        }
+
+        let valid_until = now + Duration::minutes(20);
+        let refresh_token_valid_until = valid_until + Duration::minutes(5);
+        
+        self.valid_until = valid_until.into();
+        self.refresh_token_valid_until = refresh_token_valid_until.into();
+
+        Ok(())
+    }
+
+    pub fn create_update_doc(&self) -> bson::Document {
+        let update_doc = match bson::to_document(self) {
+            Ok(doc) => doc,
+            Err(_) => doc! {}
+        };
+
+        doc! {"$set": update_doc}
+    }
+}
+
+impl From<String> for StreamData {
+    fn from(book_id: String) -> Self {
+        let factory = StreamFactory::new(book_id); 
+
+        factory.create_stream_data()
+    }
 }
 
 impl Savable for StreamData {
