@@ -1,4 +1,3 @@
-use actix_web::http::StatusCode;
 use serde::{Serialize, Deserialize};
 
 #[derive(Deserialize)]
@@ -13,6 +12,7 @@ pub struct UploadBookMetaDataResponse {
     pub book_id: String
 }
 
+#[derive(Serialize)]
 pub struct UploadBookContentResult {
-    pub status_code: StatusCode
+    pub status_code: u32
 }

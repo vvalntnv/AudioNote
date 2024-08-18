@@ -1,7 +1,6 @@
 mod database;
 mod books;
 mod generics;
-mod stream;
 
 use actix_web::{self, web, App, HttpResponse, HttpServer};
 use books::services::users_scope;
