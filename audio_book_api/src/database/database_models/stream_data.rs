@@ -1,4 +1,4 @@
-use bson::doc;
+use bson::{doc, oid::ObjectId};
 use mongodb::bson;
 use sha2::{Sha256, Digest};
 use rand::{distributions::Alphanumeric, rngs::OsRng, Rng, RngCore};
@@ -129,6 +129,17 @@ impl StreamData {
         };
 
         doc! {"$set": update_doc}
+    }
+
+    pub fn get_book_id(&self) -> &str {
+        &self.book_id
+    }
+
+    pub fn get_book_object_id(&self) -> Result<ObjectId, String> {
+        ObjectId::parse_str(&self.book_id)
+            .map_err(|err| {
+                 err.to_string()
+            })
     }
 }
 

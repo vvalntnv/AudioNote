@@ -27,3 +27,9 @@ impl ResponseError for StreamError {
         }
     }
 }
+
+impl From<String> for StreamError {
+    fn from(value: String) -> Self {
+        return StreamError::GenericStreamError { details: value }
+    }
+}

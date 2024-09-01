@@ -29,3 +29,10 @@ pub struct RefreshStreamResponse {
     pub refresh_token: String,
     pub valid_until: DateTime<Local>
 }
+
+#[derive(Deserialize)]
+pub struct StreamChunkRequest {
+    pub dir_number: String,
+    pub book_id: String,
+    pub chunk_name: String
+}

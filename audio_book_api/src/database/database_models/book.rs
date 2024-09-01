@@ -27,6 +27,10 @@ impl Book {
             directory_number
         }
     }
+
+    pub fn get_dir_number(&self) -> usize {
+        self.directory_number
+    }
 }
 
 impl Savable for Book {
