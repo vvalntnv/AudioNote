@@ -1,4 +1,4 @@
-use actix_web::{http::StatusCode, web, HttpRequest, HttpResponse, Responder};
+use actix_web::{web, HttpRequest, Responder};
 use bson::{doc, oid::ObjectId};
 use actix_files::NamedFile;
 use mongodb::Collection;
@@ -133,6 +133,7 @@ pub async fn handle_chunks(
     chunk_data: web::Path<StreamChunkRequest>,
     req: HttpRequest
 ) -> StreamResult<impl Responder> {
+    // Create a HMAC base authentication as soon as the stream is created
     let chunk_data = chunk_data.into_inner();
 
     let path = format!("./books/{dir_number}/{book_id}/{chunk_name}",

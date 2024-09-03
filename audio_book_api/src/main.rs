@@ -2,6 +2,10 @@ mod database;
 mod books;
 mod generics;
 mod stream;
+mod audio;
+mod auth;  
+
+use std::env;
 
 use actix_web::{self, web, App, HttpResponse, HttpServer};
 use books::services::books_scope;
@@ -10,7 +14,8 @@ use database::connector::DatabaseConnection;
 use dotenv;
 
 struct AppState {
-    db: DatabaseConnection
+    db: DatabaseConnection,
+    secret: String
 }
 
 async fn healthpoint() -> HttpResponse {
@@ -22,7 +27,8 @@ async fn main() -> std::io::Result<()> {
     dotenv::from_filename(".env").ok();
 
     let app_state = AppState {
-        db: DatabaseConnection::from_env().await
+        db: DatabaseConnection::from_env().await,
+        secret: env::var("SECRET").unwrap()
     };
     let app_state = web::Data::new(app_state);
 
