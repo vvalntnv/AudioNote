@@ -2,6 +2,7 @@ use actix_multipart::Multipart;
 use futures_util::StreamExt as _;
 use actix_web::web::{self, Json};
 use mongodb::bson::{doc, oid::ObjectId};
+use crate::audio::ffmpeg_controller::FFMpegController;
 use crate::{database::database_models::book::Book,  AppState};
 
 use super::book_keeper::BookKeeper;
@@ -77,6 +78,12 @@ pub async fn upload_book_content(
 
     let book_collection = app_data.db.get_collection::<Book>();
 
+    match book_collection.find_one(doc! {"_id": book_id}).await {
+        Ok(None) => return Err(BookError::InvalidIdFormat { details: "This book does not exist".to_string() }),
+        Ok(Some(_)) => ..,
+        Err(err) => return Err(BookError::InvalidIdFormat { details: err.to_string() })
+    };
+
     while let Some(item) = payload.next().await {
         let field = match item {
             Ok(value) => value,
@@ -85,13 +92,19 @@ pub async fn upload_book_content(
 
         if let Err(err) = book_keeper.insert_file_from_multipart_field(field).await {
             return Err(err)
-        } else {
-            let book_filter = doc! {"_id": book_id};
-            let update_book = doc! {"$set": doc! { "directory_number": 1 }};
-            if let Err(err) = book_collection.update_one(book_filter, update_book).await {
-                return Err(BookError::InvalidDirectoryNumber { details: err.to_string() })
-            } 
         };
+        
+        let ffmpeg = FFMpegController::new(&base_path);
+        if let Err(err) = ffmpeg.merge_many_audio_files() {
+            return Err(BookError::FileError { details: err.to_string() })
+        };
+        
+        let book_filter = doc! {"_id": book_id};
+        let update_book = doc! {"$set": doc! { "directory_number": dir_number.to_string() }};
+
+        if let Err(err) = book_collection.update_one(book_filter, update_book).await {
+            return Err(BookError::InvalidDirectoryNumber { details: err.to_string() })
+        } 
     }
 
     Ok(Json(UploadBookContentResult { message: "We guud".to_string() } ))

@@ -22,6 +22,7 @@ pub enum BookError {
     InvalidDirectoryNumber { details: String}
 }
 
+
 impl ResponseError for BookError {
     fn error_response(&self) -> actix_web::HttpResponse {
         let status_code = self.status_code(); 

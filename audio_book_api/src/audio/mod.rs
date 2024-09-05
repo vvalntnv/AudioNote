@@ -1,3 +1,3 @@
 pub mod audio_converter;
-mod ffmpeg_controller;
+pub mod ffmpeg_controller;
 mod m3u8_parser;

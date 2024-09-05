@@ -1,4 +1,4 @@
-use std::{fs::{self, File}, io::Write, path::{Path, PathBuf}};
+use std::{fs::{self, File, OpenOptions}, io::Write, path::{Path, PathBuf}};
 
 use actix_multipart::Field;
 use futures_util::StreamExt;
@@ -13,10 +13,7 @@ impl<'a> BookKeeper<'a> {
     pub fn new(base_path: &'a str) -> Result<Self, BookError> {
         let base_path = Path::new(base_path);
 
-        if !base_path.exists() {
-            fs::create_dir_all(base_path)
-                .map_err(|err| BookError::FileError { details: err.to_string() })?;
-        }
+        BookKeeper::create_path_if_not_exists(base_path)?;
 
         Ok(BookKeeper {
             base_path
@@ -47,7 +44,7 @@ impl<'a> BookKeeper<'a> {
     }
 
     async fn save_audio_files_into_dir(&self, field: &mut Field) -> Result<(), String> {
-        let file_path = self.create_file_path(field)?;
+        let file_path = self.create_book_file_path(field)?; 
 
         self.write_field_data_to_file(field, file_path).await
     }
@@ -64,6 +61,25 @@ impl<'a> BookKeeper<'a> {
         file_path.push(format!("cover.{extension}", extension=file_extension));
 
         self.write_field_data_to_file(field, file_path).await
+    }
+
+    fn create_book_file_path(&self, field: &Field) -> Result<PathBuf, String> {
+        let mut path_buf = self.base_path.to_path_buf();
+        // Place the book in the original directory
+        path_buf.push("original");
+        match BookKeeper::create_path_if_not_exists(&path_buf) {
+            Err(err) => return Err(err.to_string()),
+            Ok(()) => ..
+        };
+
+        let current_file_name = self.get_file_name(field)?;
+        path_buf.push(current_file_name); 
+
+        if let Err(err) = self.write_file_name_to_filelist(&path_buf) {
+            Err(err)
+        } else {
+            Ok(path_buf)
+        }
     }
 
     async fn write_field_data_to_file<P: AsRef<Path>>(&self, field: &mut Field, file_path: P) -> Result<(), String> {
@@ -89,15 +105,6 @@ impl<'a> BookKeeper<'a> {
         Ok(())
     }
 
-    fn create_file_path(&self, field: &Field) -> Result<PathBuf, String> {
-        let mut path_buf = self.base_path.to_path_buf();
-        let current_file_name = self.get_file_name(field)?;
-
-        path_buf.push(current_file_name);
-
-        Ok(path_buf)
-    }
-
     fn get_file_name<'b>(&self, field: &'b Field) -> Result<&'b str, String> {
         let cd = match field.content_disposition() {
             Some(cd) => cd,
@@ -107,6 +114,36 @@ impl<'a> BookKeeper<'a> {
         match cd.get_filename() {
             Some(name) => Ok(name),
             None => Err("No filename found".to_string()),
+        }
+    }
+
+    fn write_file_name_to_filelist<P: AsRef<Path>>(&self, file_path: P) -> Result<(), String> {
+        let mut filelist_path = self.base_path.to_path_buf();
+        filelist_path.push("original/filelist.txt");
+
+        let create_file = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .create(true)
+            .open(filelist_path);
+
+        let mut file = match create_file {
+            Ok(file) => file,
+            Err(err) => return Err(err.to_string())
+        };
+        
+        let path_str = if let Some(file_name) = file_path.as_ref().file_name() { 
+            file_name.to_string_lossy() 
+        } else { 
+            return Err("what".to_string()) 
+        };
+
+        println!("{}", path_str);
+        let single_file_line = format!("file '{filename}'\n", filename=path_str);
+
+        match file.write_all(single_file_line.as_bytes()) {
+            Ok(()) => Ok(()),
+            Err(err) => Err(err.to_string())
         }
     }
 
@@ -121,5 +158,14 @@ impl<'a> BookKeeper<'a> {
             }
             None => Err("Some field does not have name!")
         }
+    }
+
+    fn create_path_if_not_exists(path: &Path) -> Result<(), BookError>{
+        if !path.exists() {
+            fs::create_dir_all(path)
+                .map_err(|err| BookError::FileError { details: err.to_string() })?;
+        }
+
+        Ok(())
     }
 }
