@@ -61,6 +61,7 @@ pub async fn upload_book_content(
     mut payload: Multipart,
     app_data: web::Data<AppState>
 ) -> BookResult<Json<UploadBookContentResult>> {
+    println!("Started to upload");
     let base_path = format!("./books/");
     let dir_number = if let Some(number) = directory_handler::find_free_directory(&base_path) {
         number
@@ -69,6 +70,8 @@ pub async fn upload_book_content(
     };
 
     let base_path = format!("{base_path}/{dir_number}/{book_id}");
+    
+    println!("{}", base_path);
     let book_keeper = BookKeeper::new(&base_path)?;
 
     let book_id = ObjectId::parse_str(book_id.into_inner())
@@ -78,6 +81,7 @@ pub async fn upload_book_content(
 
     let book_collection = app_data.db.get_collection::<Book>();
 
+    println!("{:?}", book_id);
     match book_collection.find_one(doc! {"_id": book_id}).await {
         Ok(None) => return Err(BookError::InvalidIdFormat { details: "This book does not exist".to_string() }),
         Ok(Some(_)) => ..,
@@ -94,18 +98,20 @@ pub async fn upload_book_content(
             return Err(err)
         };
         
-        let ffmpeg = FFMpegController::new(&base_path);
-        if let Err(err) = ffmpeg.merge_many_audio_files() {
-            return Err(BookError::FileError { details: err.to_string() })
-        };
-        
-        let book_filter = doc! {"_id": book_id};
-        let update_book = doc! {"$set": doc! { "directory_number": dir_number.to_string() }};
-
-        if let Err(err) = book_collection.update_one(book_filter, update_book).await {
-            return Err(BookError::InvalidDirectoryNumber { details: err.to_string() })
-        } 
+        println!("Eto kakwo podawame: {}", &base_path);
     }
 
+    let ffmpeg = FFMpegController::new(&base_path);
+
+    if let Err(err) = ffmpeg.merge_many_audio_files() {
+        return Err(BookError::FileError { details: err.to_string() })
+    };
+
+    let book_filter = doc! {"_id": book_id};
+    let update_book = doc! {"$set": doc! { "directory_number": dir_number as i64 }};
+
+    if let Err(err) = book_collection.update_one(book_filter, update_book).await {
+        return Err(BookError::InvalidDirectoryNumber { details: err.to_string() })
+    } 
     Ok(Json(UploadBookContentResult { message: "We guud".to_string() } ))
 }

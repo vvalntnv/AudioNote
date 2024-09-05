@@ -3,6 +3,8 @@ use std::io::{BufRead, BufReader};
 use std::path::Path;
 use std::process::{Command, Stdio};
 
+use regex::Regex;
+
 pub struct FFMpegController<'a> {
     book_directory: &'a Path    
 }
@@ -24,11 +26,10 @@ impl<'a> FFMpegController<'a> {
         path_buf.push("original");
         
         if path_buf.components().count() <= 2 {
-            return self.move_file_to_root(path_buf.join("filelist.txt")); 
+            return self.move_file_to_root(path_buf); 
         }
 
-        let filelist_file = path_buf.clone();
-        path_buf.pop();
+        let filelist_file = path_buf.join("filelist.txt");
 
         let filelist_extension = if let Some(ext) = self.get_single_file_extension(&filelist_file){
             ext
@@ -37,7 +38,20 @@ impl<'a> FFMpegController<'a> {
         };
 
         let output_file_name = format!("merged_output.{ext}", ext=filelist_extension);
+        let output_file = path_buf.parent().unwrap().join(&output_file_name);
 
+        println!("The file extension is: {}", filelist_extension);
+        println!("{}", filelist_file.to_string_lossy());
+
+        println!("Comandata e suzdadena");
+
+        // TODO: spawn this in a separate thread and make it write to a log 
+        // file that will track this task specifically. Then the log file can be read via 
+        // the WebSocket endpoint and a progress bar should be displayed.
+        // Considering also different progress files that will be deleted 
+        // after the process is finished
+        // The files will be per-book files and there the process will write progress 
+        // until finished. A FFMpegTracker struct is most probably required :)
         let command = Command::new("ffmpeg")
             .args([
                 "-f",
@@ -57,10 +71,12 @@ impl<'a> FFMpegController<'a> {
                 "-threads",
                 "4",
 
-                &output_file_name
+                &output_file.to_str().unwrap()
             ])
             .stdout(Stdio::piped())
             .spawn();
+
+        println!("tuka sme ne se plahsete");
 
         match command {
             Ok(mut handle) => {
@@ -69,11 +85,14 @@ impl<'a> FFMpegController<'a> {
                 if let Err(err) = handle.wait(){
                     Err(err.to_string())
                 } else {
+                    println!("deleting this: {:?}", &path_buf);
+                    if let Err(err) = fs::remove_dir_all(path_buf) { return Err(err.to_string()) };
                     Ok(())
                 }
             }
             Err(err) => Err(format!("Maikata si eba nesho, {}", err.to_string()))
         }
+
     }
 
     fn get_single_file_extension(&self, filelist_file: &Path) -> Option<String> {
@@ -88,24 +107,21 @@ impl<'a> FFMpegController<'a> {
         let mut reader = BufReader::new(file);
         let mut line = String::new();
 
-        let file_path = match reader.read_line(&mut line) {
+        let file_regex = if let Ok(regex) = Regex::new(r"file '.+\.([a-z0-9]+)'\n") { regex } else { return None; };
+
+        match reader.read_line(&mut line) {
             Ok(_) => {
-                let file_path = Path::new(&line);
-                if file_path.is_file() {
-                    file_path
+                let file_ext = file_regex.captures(&line);
+                if let Some(captures) = file_ext {
+                    let extension = captures.get(1)?.as_str().to_owned();
+                    println!("here is the extension: {}", extension);
+                    Some(extension)
                 } else {
-                    return None
+                    None
                 }
             },
             Err(_) => return None
-        };
-
-        if let Some(extension) = file_path.extension() {
-            Some(extension.to_string_lossy().into_owned())
-        } else {
-            None
         }
-
     }
 
     pub fn encode_book(&self) -> Result<(), String> {
@@ -115,6 +131,8 @@ impl<'a> FFMpegController<'a> {
         todo!()
     }
 
+    // BUG: This does not move the file to the
+    // TODO: We should add a logic that gets the file that is not named filelist.txt
     fn move_file_to_root<P: AsRef<Path>>(&self, path: P) -> Result<(), String> {
         let destination_dir = self.book_directory;
         let curr_path = path.as_ref();
