@@ -4,6 +4,7 @@ mod generics;
 mod stream;
 mod audio;
 mod auth;  
+mod logger;
 
 use std::env;
 
@@ -32,7 +33,6 @@ async fn main() -> std::io::Result<()> {
     };
     let app_state = web::Data::new(app_state);
 
-    println!("Are bate bachka");
 
     HttpServer::new(move || {
         App::new()

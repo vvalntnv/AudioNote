@@ -61,7 +61,6 @@ pub async fn upload_book_content(
     mut payload: Multipart,
     app_data: web::Data<AppState>
 ) -> BookResult<Json<UploadBookContentResult>> {
-    println!("Started to upload");
     let base_path = format!("./books/");
     let dir_number = if let Some(number) = directory_handler::find_free_directory(&base_path) {
         number
@@ -71,9 +70,7 @@ pub async fn upload_book_content(
 
     let base_path = format!("{base_path}/{dir_number}/{book_id}");
     
-    println!("{}", base_path);
     let book_keeper = BookKeeper::new(&base_path)?;
-
     let book_id = ObjectId::parse_str(book_id.into_inner())
                     .map_err(|err| {
                         BookError::InvalidIdFormat { details: err.to_string() }
@@ -81,7 +78,6 @@ pub async fn upload_book_content(
 
     let book_collection = app_data.db.get_collection::<Book>();
 
-    println!("{:?}", book_id);
     match book_collection.find_one(doc! {"_id": book_id}).await {
         Ok(None) => return Err(BookError::InvalidIdFormat { details: "This book does not exist".to_string() }),
         Ok(Some(_)) => ..,
@@ -98,12 +94,15 @@ pub async fn upload_book_content(
             return Err(err)
         };
         
-        println!("Eto kakwo podawame: {}", &base_path);
     }
 
-    let ffmpeg = FFMpegController::new(&base_path);
+    let ffmpeg = FFMpegController::new(&base_path, book_id.to_string());
 
     if let Err(err) = ffmpeg.merge_many_audio_files() {
+        return Err(BookError::FileError { details: err.to_string() })
+    };
+
+    if let Err(err) = ffmpeg.create_hls_stream() {
         return Err(BookError::FileError { details: err.to_string() })
     };
 

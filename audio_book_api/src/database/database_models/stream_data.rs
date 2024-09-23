@@ -52,8 +52,6 @@ impl StreamFactory {
             .map(char::from)
             .collect();
 
-        println!("{}", &rand_string);
-
         let mut hasher = Sha256::new();
         hasher.update(rand_string);
         let result = hasher.finalize();
@@ -61,8 +59,6 @@ impl StreamFactory {
         let hex: String = result.iter()
             .map(|byte| format!("{:02x}", byte))
             .collect();
-
-        println!("{}", hex);
 
         hex
     }

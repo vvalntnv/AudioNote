@@ -1,22 +1,83 @@
+use std::env;
 use std::fs::{self, OpenOptions};
 use std::io::{BufRead, BufReader};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::sync::Arc;
 
 use regex::Regex;
 
+use crate::audio::audio_converter::AudioConverterTask;
+
 pub struct FFMpegController<'a> {
-    book_directory: &'a Path    
+    book_directory: &'a Path,
+    book_id: String
 }
 
 impl<'a> FFMpegController<'a> {
-    pub fn new<P: AsRef<Path>>(book_path: &'a P) -> Self{
+    pub fn new<P: AsRef<Path>>(book_path: &'a P, book_id: String) -> Self {
         FFMpegController {
-            book_directory: book_path.as_ref()
+            book_directory: book_path.as_ref(),
+            book_id
         } 
     }
 
-    // TODO: finsh this audio merging
+
+    /// This method will spawn a separate thread that will encode a file
+    /// and write to a log file. To follow the progress of the encoding,
+    /// the external user should connect to one of the `/progress` websocket endpoints
+    pub fn create_hls_stream(&self) -> Result<(), String> {
+        let file = match self.get_book_file() {
+            Ok(Some(file)) => file,
+            Ok(None) => return Err("Book file couldn't be found".to_string()),
+            Err(err) => return Err(err.to_string())
+        }; 
+
+        let chunks_dir = self.book_directory.join("chunks");
+
+        if !chunks_dir.exists() {
+            fs::create_dir(&chunks_dir)
+                .map_err(|e| e.to_string())?;
+        }
+        let job = AudioConverterTask::new(&self.book_id);
+
+        // This will run the command in a separate thread
+        job.spawn(file, &chunks_dir)?;
+
+        Ok(())
+    }
+
+    fn get_book_file(&self) -> Result<Option<PathBuf>, String> {
+        let file_regex = Regex::new(r"book\.[a-z0-9]+").unwrap(); 
+
+        let dir_entries = match fs::read_dir(self.book_directory) {
+            Ok(entries) => entries,
+            Err(err) => return Err(err.to_string())
+        };
+
+        for entry in dir_entries {
+            let entry = if let Err(err) = entry {
+                return Err(err.to_string());
+            } else {
+                entry.unwrap()
+            };
+
+            let path = entry.path();
+
+            if !path.is_file() {
+               continue 
+            }
+
+            let file_name = path.file_name().unwrap().to_string_lossy();
+            if file_regex.is_match(&file_name) {
+                return Ok(Some(path));
+            }
+        }
+
+        Ok(None)
+    }
+
+
     /// Megres many audio files in the books dircetory into one
     /// If the file is only one, then it renames it and places it in the root of the book directory
     /// Note that this file will be deleted sooner or later
@@ -37,21 +98,9 @@ impl<'a> FFMpegController<'a> {
             "".to_string()
         };
 
-        let output_file_name = format!("merged_output.{ext}", ext=filelist_extension);
+        let output_file_name = format!("book.{ext}", ext=filelist_extension);
         let output_file = path_buf.parent().unwrap().join(&output_file_name);
 
-        println!("The file extension is: {}", filelist_extension);
-        println!("{}", filelist_file.to_string_lossy());
-
-        println!("Comandata e suzdadena");
-
-        // TODO: spawn this in a separate thread and make it write to a log 
-        // file that will track this task specifically. Then the log file can be read via 
-        // the WebSocket endpoint and a progress bar should be displayed.
-        // Considering also different progress files that will be deleted 
-        // after the process is finished
-        // The files will be per-book files and there the process will write progress 
-        // until finished. A FFMpegTracker struct is most probably required :)
         let command = Command::new("ffmpeg")
             .args([
                 "-f",
@@ -76,16 +125,11 @@ impl<'a> FFMpegController<'a> {
             .stdout(Stdio::piped())
             .spawn();
 
-        println!("tuka sme ne se plahsete");
-
         match command {
             Ok(mut handle) => {
-                // TODO: in the future return the handle to the child process
-                // and read the stdout to get the percentage of completion
                 if let Err(err) = handle.wait(){
                     Err(err.to_string())
                 } else {
-                    println!("deleting this: {:?}", &path_buf);
                     if let Err(err) = fs::remove_dir_all(path_buf) { return Err(err.to_string()) };
                     Ok(())
                 }
@@ -107,14 +151,13 @@ impl<'a> FFMpegController<'a> {
         let mut reader = BufReader::new(file);
         let mut line = String::new();
 
-        let file_regex = if let Ok(regex) = Regex::new(r"file '.+\.([a-z0-9]+)'\n") { regex } else { return None; };
+        let file_regex = Regex::new(r"file '.+\.([a-z0-9]+)'\n").unwrap();
 
         match reader.read_line(&mut line) {
             Ok(_) => {
                 let file_ext = file_regex.captures(&line);
                 if let Some(captures) = file_ext {
                     let extension = captures.get(1)?.as_str().to_owned();
-                    println!("here is the extension: {}", extension);
                     Some(extension)
                 } else {
                     None
@@ -124,15 +167,7 @@ impl<'a> FFMpegController<'a> {
         }
     }
 
-    pub fn encode_book(&self) -> Result<(), String> {
-        let mut original = self.book_directory.to_path_buf();
-        original.push("original");         
 
-        todo!()
-    }
-
-    // BUG: This does not move the file to the
-    // TODO: We should add a logic that gets the file that is not named filelist.txt
     fn move_file_to_root<P: AsRef<Path>>(&self, path: P) -> Result<(), String> {
         let destination_dir = self.book_directory;
         let curr_path = path.as_ref();
