@@ -5,6 +5,7 @@ mod stream;
 mod audio;
 mod auth;  
 mod logger;
+mod websockets;
 
 use std::env;
 

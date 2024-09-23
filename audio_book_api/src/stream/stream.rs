@@ -22,12 +22,20 @@ impl<'a> StreamHandler <'a> {
     pub fn get_playlist_data(&self) -> Option<PathBuf> {
         let mut file_path = PathBuf::from(self.base_path);
 
-        file_path.push("output.m3u8"); 
+        file_path.push("playlist.m3u8"); 
 
         if file_path.exists() {
             Some(file_path)
         } else {
             None
         }
+    }
+
+    // TODO: finish this method brother :)
+    pub fn get_chunk(&self, chunk_number: usize) ->  Option<Box<Path>>{
+        let mut chunks_path = PathBuf::from(self.base_path);
+        chunks_path.push("chunks");
+
+        todo!()
     }
 }

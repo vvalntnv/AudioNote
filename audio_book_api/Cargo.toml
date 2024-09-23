@@ -22,6 +22,7 @@ hmac = "0.12.1"
 hex = "0.4.3"
 regex = "1.10.6"
 fs2 = "0.4.3"
+actix-ws = "0.3.0"
 
 [dependencies.mongodb]
 version = "3.0.1"

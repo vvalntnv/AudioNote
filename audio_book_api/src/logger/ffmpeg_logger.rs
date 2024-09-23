@@ -3,8 +3,8 @@ use std::{fs::File, io::Write, path::Path};
 use fs2::FileExt;
 use std::io::{Error, ErrorKind};
 use regex::Regex;
-
 use super::logger::Logger;
+
 pub struct FFMpegLogger<'a> {
     log_file: &'a Path,
     content_ms: f64,
