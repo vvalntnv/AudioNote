@@ -10,7 +10,6 @@ pub struct Book {
     author_name: String,
     description: String,
     directory_number: usize,
-    is_uploaded: bool
 }
 
 impl Book {
@@ -26,16 +25,11 @@ impl Book {
             author_name,
             description: book_description,
             directory_number,
-            is_uploaded: false
         }
     }
 
     pub fn get_dir_number(&self) -> usize {
         self.directory_number
-    }
-
-    pub fn set_as_uploaded(&mut self) {
-        self.is_uploaded = true
     }
 }
 

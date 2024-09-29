@@ -46,7 +46,6 @@ impl ConnectionArgs {
 impl DatabaseConnection {
     async fn new(args: ConnectionArgs) -> Self {
         let url = args.construct_url();
-        println!("{}", &url);
         let client = Client::with_uri_str(&url)
             .await
             .unwrap();

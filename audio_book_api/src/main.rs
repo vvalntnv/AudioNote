@@ -9,7 +9,7 @@ mod websockets;
 
 use std::env;
 
-use actix_web::{self, web, App, HttpResponse, HttpServer};
+use actix_web::{self, web, App, HttpResponse, HttpServer, middleware::Logger};
 use books::services::books_scope;
 use stream::services::stream_scope;
 use database::connector::DatabaseConnection;

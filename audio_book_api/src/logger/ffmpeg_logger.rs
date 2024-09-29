@@ -1,5 +1,5 @@
 use core::str;
-use std::{fs::File, io::Write, path::Path};
+use std::{fs::{self, File}, io::Write, path::Path};
 use fs2::FileExt;
 use std::io::{Error, ErrorKind};
 use regex::Regex;
@@ -35,6 +35,7 @@ impl<'a> FFMpegLogger<'a> {
         file.write("100%".as_bytes())?;
         file.unlock()?;
 
+        let _ = fs::remove_file(self.log_file);
         Ok(())
     }
 
@@ -65,6 +66,7 @@ impl<'a> Logger for FFMpegLogger<'a> {
     fn write_to_file(&self, data: &[u8]) -> std::io::Result<usize> {
         let mut file = File::options()
             .write(true)
+            .create(false)
             .open(self.log_file)?; 
 
         if data.len() < 1 {
@@ -74,6 +76,12 @@ impl<'a> Logger for FFMpegLogger<'a> {
 
         if let Some(percentage) = self.calculate_percentage(data) {
             let percentage = percentage as usize;
+
+            if percentage == 100 {
+                fs::remove_file(self.log_file)?;  
+                return Ok(0)
+            }
+
             let percentage_str = percentage.to_string() + "%";
 
             file.lock_exclusive()?;

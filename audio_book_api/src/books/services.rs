@@ -1,9 +1,13 @@
 use actix_multipart::Multipart;
+use actix_web::{HttpRequest, HttpResponse};
 use futures_util::StreamExt as _;
 use actix_web::web::{self, Json};
+use actix_web::middleware::Logger;
 use mongodb::bson::{doc, oid::ObjectId};
 use crate::audio::ffmpeg_controller::FFMpegController;
 use crate::{database::database_models::book::Book,  AppState};
+use crate::websockets::progress_socket::ProgressSocket;
+use crate::websockets::data::WebSocketData;
 
 use super::book_keeper::BookKeeper;
 use super::directory_handler;
@@ -24,7 +28,13 @@ pub fn books_scope(cfg: &mut web::ServiceConfig) {
         web::resource("/{book_id}/content")
             .route(web::post().to(upload_book_content))
     );
+
+    cfg.service(
+        web::resource("/{book_id}/progress")
+            .route(web::get().to(track_upload_progress))
+    );
 }
+
 
 pub async fn upload_book_metadata(
     book_data: Json<UploadBookMetaData>, 
@@ -113,4 +123,27 @@ pub async fn upload_book_content(
         return Err(BookError::InvalidDirectoryNumber { details: err.to_string() })
     } 
     Ok(Json(UploadBookContentResult { message: "We guud".to_string() } ))
+}
+
+async fn track_upload_progress(
+    book_id: web::Path<String>,
+    req: HttpRequest,
+    body: web::Payload
+) -> BookResult<HttpResponse> 
+{
+    let (data, response) = match WebSocketData::new(req, body) {
+        Ok(d) => d,
+        Err(err) => return Err(BookError::ProgressWebsocketError { 
+            details: err.to_string() 
+        })
+    };
+    let book_id = book_id.into_inner();
+
+    let tracker = match ProgressSocket::new(book_id) {
+        Ok(t) => t,
+        Err(err) => return Err(BookError::ProgressWebsocketError { details: err })
+    };
+
+    tracker.initialize(data); 
+    Ok(response)
 }

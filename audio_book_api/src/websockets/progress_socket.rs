@@ -1,80 +1,101 @@
 use std::path::Path;
+use std::time::{Duration, Instant};
+use std::pin::pin;
 
-use actix_ws::{AggregatedMessage, AggregatedMessageStream, CloseCode, CloseReason, Session};
-use futures_util::StreamExt;
+use actix_ws::{self, AggregatedMessage, AggregatedMessageStream, CloseCode, CloseReason, Session};
+use futures_util::{future::{self, Either}, StreamExt};
+use actix_web::rt;
+use tokio::time::interval;
 use tokio::{fs::File, io::AsyncReadExt};
-use fs2::FileExt;
 
 use super::data::WebSocketData;
 
-type ConnClosed = bool;
+type IncommingMessage = Result<AggregatedMessage, actix_ws::ProtocolError>;
+
+const HEARTBEAT_INTERVAL: Duration = Duration::from_secs(5);
+const CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub struct ProgressSocket {
     book_id: String
 }
 
 impl ProgressSocket {
-    pub fn new(book_id: String) -> Self {
-        ProgressSocket { book_id }
+    pub fn new(book_id: String) -> Result<Self, String> {  
+        let socket = ProgressSocket { book_id };
+
+        if let None = socket.get_log_file_path() {
+            Err("The book is not in progress!".to_owned())
+        } else {
+            Ok(socket)
+        }
     }
 
     /// Runs the socket handler in a separate green thread
     /// It consumes the websocket_data
-    pub async fn initialize(&self, websocket_data: WebSocketData) { 
-        let mut stream = websocket_data.stream
+    /// It also consumes self
+    pub fn initialize(self, websocket_data: WebSocketData) { 
+        let stream = websocket_data.stream
             .aggregate_continuations();
-        let mut session = websocket_data.session;
-        let task = self.run(stream, session);
+        let session = websocket_data.session;
 
         // TODO: Tokio tutorial
-        tokio::spawn(async move {
-            task.await
-        }).await;
+        rt::spawn(async move {
+            self.run(stream, session).await;
+        });
     }
 
-    pub async fn run(
-        &self, 
+    async fn run(
+        &self,
         mut stream: AggregatedMessageStream,
-        mut session: Session
+        mut session: Session,
     ) {
+        let mut last_heartbeat = Instant::now();
+        let mut interval = interval(HEARTBEAT_INTERVAL);
         
-        loop {
-            let res = self.handle_incoming(&mut stream, &mut session).await;
-            match res {
-                Ok(false) => 
-                    if let Some(close_reason) = self.send_data_to(&mut session)
-                        .await 
-                    {
-                        session.close(Some(close_reason)).await.unwrap();
-                        break;
+        let close_reason = loop {
+            let tick = pin!(interval.tick());
+
+            match future::select(stream.next(), tick).await {
+                Either::Left((message, _)) => {
+                    if let Some(m) = message {
+                        match self.handle_incoming(m, &mut session).await {
+                            Some(reason) => break reason,
+                            _ => last_heartbeat = Instant::now()
+                        }
+                    } else {
+                        ()
                     }
-                Ok(true) => {
-                    session.close(None).await.unwrap();
-                    break;
                 },
-                Err(err) => {
-                    let close_reason = CloseReason {
-                        code: CloseCode::Error,
-                        description: Some(err)
-                    };
-                    session.close(Some(close_reason)).await.unwrap();
-                    break;
+                Either::Right((_instant, _)) => {
+                    if Instant::now().duration_since(last_heartbeat) > CLIENT_TIMEOUT {
+                        break CloseReason {
+                            code: CloseCode::Away,
+                            description: Some("Client took too long".to_owned())
+                        }
+                    }
+                    let _ = session.ping(b"").await;
+                    if let Some(reason) = self.send_data_to(&mut session).await {
+                        break reason
+                    }
                 }
             };
-        } 
+        };
+
+        let _ = session.close(Some(close_reason)).await;
     }
 
     async fn send_data_to(&self, session: &mut Session) -> Option<CloseReason> {
         let mut file = if let Some(path) = self.get_log_file_path() {
             File::options()
                 .read(true)
+                .create(false)
                 .open(path.as_ref())
                 .await
                 .unwrap() 
         } else {
             let close_reason = CloseReason {
                 code: CloseCode::Normal,
-                description: Some("There is no progress made".to_owned())
+                description: Some("There is no progress being made".to_owned())
             };
             return Some(close_reason);
         };
@@ -102,24 +123,32 @@ impl ProgressSocket {
 
     async fn handle_incoming(
         &self, 
-        stream: &mut AggregatedMessageStream, 
+        message: IncommingMessage,
         session: &mut Session
-    ) -> Result<ConnClosed, String> {
-        while let Some(message) = stream.next().await {
-            match message {
-                Ok(AggregatedMessage::Ping(msg)) => {
-                    session.pong(&msg).await.unwrap(); 
-                },
-                Ok(AggregatedMessage::Close(_)) => {
-                    return Ok(true)
-                },
-                Err(err) => {
-                    return Err(err.to_string())
-                },
-                _ => {}
-            }
+    ) -> Option<CloseReason> {
+        match message {
+            Ok(AggregatedMessage::Ping(msg)) => {
+                session.pong(&msg).await.unwrap(); 
+                None
+            },
+            Ok(AggregatedMessage::Close(_)) => {
+                Some(CloseReason { 
+                    code: CloseCode::Normal, 
+                    description: None 
+                }) 
+            },
+            Ok(AggregatedMessage::Text(msg)) => {
+                session.text(msg).await.unwrap();
+                None
+            },
+            Err(err) => {
+                Some(CloseReason { 
+                    code: CloseCode::Error, 
+                    description: Some(err.to_string()) 
+                })
+            },
+            _ => None
         }
-        Ok(false)
     }
 
     fn get_log_file_path(&self) -> Option<Box<Path>> {

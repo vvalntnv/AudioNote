@@ -31,9 +31,12 @@ impl AudioConverterTask {
 
     fn execute_chunk_splitting(&self, file: PathBuf, output_dir: &Path) -> Result<(), String> {
         let segment_naming = format!("{}/segment_%04d.ts", output_dir.to_str().unwrap());
-        let playlist_file = format!("{}/playlist.m3u8", output_dir.to_str().unwrap());
+
+        let book_dir = output_dir.parent().unwrap();
+        let playlist_file = format!("{}/playlist.m3u8", book_dir.to_str().unwrap());
+
         let base_url = if let Ok(var) = env::var("API_URI") { 
-            var 
+            var + "/" 
         } else { 
             return Err("Api base url not set".to_string())
         };
