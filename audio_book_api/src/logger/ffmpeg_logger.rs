@@ -35,6 +35,7 @@ impl<'a> FFMpegLogger<'a> {
         file.write("100%".as_bytes())?;
         file.unlock()?;
 
+        println!("Removing file: {}", self.log_file.as_os_str().to_str().unwrap());
         let _ = fs::remove_file(self.log_file);
         Ok(())
     }

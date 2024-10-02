@@ -136,13 +136,11 @@ pub async fn handle_chunks(
     // Create a HMAC base authentication as soon as the stream is created
     let chunk_data = chunk_data.into_inner();
 
-    let path = format!("./books/{dir_number}/{book_id}/{chunk_name}",
+    let path = format!("./books/{dir_number}/{book_id}/chunks/{chunk_name}",
         dir_number=chunk_data.dir_number,
         book_id=chunk_data.book_id,
         chunk_name=chunk_data.chunk_name
     );
-
-    println!("{}", &path);
 
     let chunk_file = NamedFile::open(path)
         .map_err(|err| err.to_string())?;

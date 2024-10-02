@@ -1,10 +1,10 @@
 use core::panic;
 use std::path::PathBuf;
 use std::sync::Arc;
-use std::str;
+use std::{str, vec::Vec};
 use std::{io::{prelude::*}, path::Path};
 use std::process::{Command, Stdio};
-use std::fs::File;
+use std::fs::{self, File};
 
 use std::{env, thread};
 
@@ -35,8 +35,9 @@ impl AudioConverterTask {
         let book_dir = output_dir.parent().unwrap();
         let playlist_file = format!("{}/playlist.m3u8", book_dir.to_str().unwrap());
 
-        let base_url = if let Ok(var) = env::var("API_URI") { 
-            var + "/" 
+        let base_url = if let Ok(uri) = env::var("API_URI") { 
+            let path = self.construct_path(&book_dir);
+            format!("{api_base}/stream/segments/{path}/", api_base=uri, path=path)
         } else { 
             return Err("Api base url not set".to_string())
         };
@@ -112,6 +113,7 @@ impl AudioConverterTask {
                 }
                 Err(_) => panic!("ffmpeg pai si eba veko")
             }
+            let _ = fs::remove_file(file_arc.as_path());
             logger.write_complete().unwrap();
 
         })
@@ -162,6 +164,17 @@ impl AudioConverterTask {
             },
             Err(err) => Err(err.to_string())
         }
+    }
+
+    fn construct_path(&self, book_dir: &Path) -> String {
+        let url_path = book_dir.components()
+            // We preserve the last 2 elements {dir_id}/{book_id}
+            .skip(book_dir.components().count() - 2)
+            .map(|c| c.as_os_str().to_str().unwrap())
+            .collect::<Vec<&str>>()
+            .join("/");
+
+        url_path
     }
 }
 
